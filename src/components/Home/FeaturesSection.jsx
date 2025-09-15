@@ -1,0 +1,68 @@
+import React, { useEffect, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/autoplay";
+
+const FeaturesSection = () => {
+  const [categories, setCategories] =useState([]);
+  
+      useEffect(()=>{
+          fetch('http://localhost:5000/categories')
+          .then(res => res.json())
+          .then(data => {
+              setCategories(data);
+          })
+      },[])
+
+  return (
+    <div className="w-full px-6 py-10">
+      <h2 className="text-2xl font-bold mb-6 text-center">Feature Categories</h2>
+
+      <Swiper
+        slidesPerView={6}
+        spaceBetween={20}
+        loop={true}
+        autoplay={{
+          delay: 2000,
+          disableOnInteraction: false,
+        }}
+        speed={1000}
+        modules={[Autoplay]}
+        breakpoints={{
+          320: { slidesPerView: 2 }, // Mobile
+          640: { slidesPerView: 3 }, // Small tab
+          768: { slidesPerView: 4 }, // Tablet
+          1024: { slidesPerView: 6 }, // Desktop
+        }}
+      >
+        {categories.map((cat) => (
+          <SwiperSlide key={cat._id}>
+             <div className="w-40 mx-auto">
+      <div className="card h-48 bg-blue-200 shadow-xl transition-all duration-200 rounded-t-full border-2 border-solid border-purple-600 hover:rounded-none overflow-hidden">
+        {/* Image */}
+        <figure className="overflow-hidden">
+          <img
+            src={cat.photoUrl} // এখানে তোর image path দিবি
+            alt={cat.categoryName}
+            className="h-[120px] w-[120px] object-conver transition-transform duration-500 hover:scale-110"
+          />
+        </figure>
+
+        {/* Body */}
+        <div className="card-body p-2 items-center">
+          <button className="btn btn-outline w-full transition-all duration-200 hover:btn-primary hover:rounded-none">
+           {cat.categoryName}
+          </button>
+        </div>
+      </div>
+    </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </div>
+  );
+};
+
+export default FeaturesSection;
+
