@@ -4,9 +4,9 @@ import profile from "../../assets/Profile.png";
 
 const Banner = () => {
   return (
-    <div className="flex flex-col md:flex-row w-full h-[450px] mt-10">
+    <div className="flex flex-col md:flex-row w-full h-auto md:h-[450px] mt-10 pb-4 md:pb-0">
       {/* Left Card Section */}
-      <div className="md:w-1/3 w-full bg-white/80 shadow-lg rounded-2xl p-6 flex flex-col items-center justify-center text-center">
+      <div className="md:w-1/3 w-full bg-white/80 shadow-lg rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center text-center">
         <img
           src={profile}
           alt="Profile"
@@ -23,7 +23,7 @@ const Banner = () => {
       </div>
 
       {/* Right Cover Section */}
-      <div className="relative md:w-2/3 w-full h-[450px]">
+      <div className="relative md:w-2/3 w-full h-[300px] md:h-[450px]">
         <img
           src={cover}
           alt="Cover"

@@ -1,25 +1,76 @@
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import bg from '../../assets/Profile.png'
 
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { AuthContext } from '../../providers/AuthProvider';
+import Swal from 'sweetalert2';
+import axios from 'axios';
 
 const Login = () => {
   const [showPwd, setShowPwd] = useState(false);
+  const{signInUser} = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    const form = e.Target
-    const email = form.email.value;
-    const  password =form.password.value;
-    const remember = form.remember.value;
+  e.preventDefault();
+
+  const form = e.target;
+  const email = form.email.value;
+  const password = form.password.value;
+
+  signInUser(email, password)
+    .then((result) => {
+      const user = result.user.email;
+      console.log(user);
+     
+     
+
+      Swal.fire({
+        icon: "success",
+        title: "SignIn Successful",
+        text: `Welcome, ${user}!`,
+        showConfirmButton: false,
+        timer: 2000,
+      }).then(() => {
+        navigate("/"); // ✅ এখানেই redirect
+      });
+
+      form.reset();
+    })
+    .catch((err) => {
+      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "Login Failed",
+        text: err.message,
+      });
+    });
+};
+
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   const form = e.target;
+  //   const email = form.email.value;
+  //   const  password =form.password.value;
+  //   const remember = form.remember.value;
     
-   const user ={
-    email,
-    password,
-    remember
-   }
-  };
+  //   signInUser(email,password)
+  //   .then(result =>{
+  //     const user = result.user;
+  //       Swal.fire({
+  //                   icon: 'success',
+  //                   title: 'SignIn Successful',
+  //                   text: `Welcome, ${user.email}!`,
+  //                   showConfirmButton: false,
+  //                   timer: 2000
+  //                 })
+      
+  //   })
+  //   .catch(err => console.error(err))
+  //   form.reset();
+  //    Navigate('/')
+  // };
 
   return (
     <div

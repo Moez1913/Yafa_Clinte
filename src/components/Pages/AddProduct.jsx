@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 const AddProduct = () => {
     const [categories,setCategories]=useState([]);
     const [brands,setBrands]= useState([]) ;
+    const [imageFile, setImageFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
 
     useEffect(()=>{
       fetch('http://localhost:5000/categories')
@@ -23,43 +25,120 @@ const AddProduct = () => {
 
    
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const productName = form.productName.value;
-    const photoUrl= form.PhotoUrl.value;
-    const price = form.price.value;
-    const discount = form.discount.value;
-    const category = form.category.value;
-    const brand = form.brand.value;
-    const AdCategory = form.AdCategory.value;
-    const forWhom = form.forWhom.value;
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+    }
+  };
 
-    const newProduct = {
-      productName,
-      photoUrl,
-      price,
-      discount,
-      category,
-      brand,
-      AdCategory,
-      forWhom
-    };
+  const uploadImageToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'korean_dewdrop');
 
-    fetch('http://localhost:5000/products', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(newProduct)
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.insertedId) {
-          alert('Product added successfully');
-          form.reset();
+    try {
+      console.log('Uploading to Cloudinary...');
+      console.log('File name:', file.name);
+      console.log('File size:', file.size);
+      
+      const response = await fetch(
+        'https://api.cloudinary.com/v1_1/djp63rqr8/image/upload',
+        {
+          method: 'POST',
+          body: formData
         }
+      );
+      
+      const data = await response.json();
+      
+      console.log('Cloudinary response:', data);
+      
+      if (!response.ok) {
+        const errorMsg = data.error?.message || response.statusText;
+        throw new Error(`Cloudinary error: ${errorMsg}`);
+      }
+      
+      if (!data.secure_url) {
+        throw new Error('No URL returned from Cloudinary');
+      }
+      
+      console.log('Image uploaded successfully:', data.secure_url);
+      return { url: data.secure_url, publicId: data.public_id };
+    } catch (error) {
+      console.error('Cloudinary upload error:', error);
+      alert('Image upload failed: ' + error.message);
+      return null;
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!imageFile) {
+        alert('Please select an image');
+        return;
+    }
+
+    setUploading(true);
+
+    try {
+      // Upload image to Cloudinary first
+      const imageData = await uploadImageToCloudinary(imageFile);
+
+      if (!imageData) {
+        setUploading(false);
+        return;
+      }
+
+      const form = e.target;
+      const productName = form.productName.value;
+      const price = form.price.value;
+      const discount = form.discount.value;
+      const category = form.category.value;
+      const brand = form.brand.value;
+      const AdCategory = form.AdCategory.value;
+      const forWhom = form.forWhom.value;
+
+      const newProduct = {
+        productName,
+        image: imageData.url, // Cloudinary URL
+        publicId: imageData.publicId, // Cloudinary public_id
+        price,
+        discount,
+        category,
+        brand,
+        AdCategory,
+        forWhom
+      };
+
+      const response = await fetch('http://localhost:5000/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newProduct)
       });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.insertedId) {
+        alert('Product added successfully');
+        form.reset();
+        setImageFile(null);
+      } else {
+        throw new Error('Product not inserted');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error: ' + error.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
  
@@ -84,17 +163,27 @@ const AddProduct = () => {
               required
             />
           </div>
-          {/* Photo Url */}
+          {/* Photo Upload */}
           <div>
-            <label className="block font-medium mb-1">Photo Url</label>
+            <label className="block font-medium mb-1">Upload Image</label>
             <input
-              type="url"
-              name="PhotoUrl"
-              
+              type="file"
+              name="image"
+              onChange={handleImageChange}
+              accept="image/*"
               className="input input-bordered w-full"
-              placeholder="PhotoUrl"
               required
             />
+            {imageFile && (
+              <div className="mt-3">
+                <p className="text-sm text-green-600 mb-2">Selected: {imageFile.name}</p>
+                <img 
+                  src={URL.createObjectURL(imageFile)} 
+                  alt="Preview" 
+                  className="w-full h-64 object-cover rounded-lg border-2 border-gray-300"
+                />
+              </div>
+            )}
           </div>
 
           {/* Price */}
@@ -171,7 +260,7 @@ const AddProduct = () => {
             <select
               name="AdCategory"
               className="select select-bordered w-full"
-              required   
+                 
             >
               <option value="">-- Select Category --</option>
         
@@ -224,8 +313,8 @@ const AddProduct = () => {
           </div>
 
           {/* Submit */}
-          <button type="submit" className="btn btn-primary mt-4">
-            Add Product
+          <button type="submit" className="btn btn-primary mt-4" disabled={uploading}>
+            {uploading ? 'Uploading...' : 'Add Product'}
           </button>
         </form>
       </div>

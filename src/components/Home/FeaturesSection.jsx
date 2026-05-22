@@ -16,8 +16,9 @@ const FeaturesSection = () => {
       },[])
 
   return (
-    <div className="w-full px-6 py-10">
-      <h2 className="text-2xl font-bold mb-6 text-center">Feature Categories</h2>
+    <div className="w-full px-4 sm:px-6 py-8 sm:py-10 mt-4 sm:mt-8 relative z-0">
+      <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center">Feature Categories</h2>
+      
 
       <Swiper
         slidesPerView={6}
@@ -30,22 +31,22 @@ const FeaturesSection = () => {
         speed={1000}
         modules={[Autoplay]}
         breakpoints={{
-          320: { slidesPerView: 2 }, // Mobile
-          640: { slidesPerView: 3 }, // Small tab
-          768: { slidesPerView: 4 }, // Tablet
+          320: { slidesPerView: 3 }, // Mobile
+          640: { slidesPerView: 4 }, // Small tab
+          768: { slidesPerView: 5 }, // Tablet/laptop
           1024: { slidesPerView: 6 }, // Desktop
         }}
       >
         {categories.map((cat) => (
           <SwiperSlide key={cat._id}>
-             <div className="w-40 mx-auto">
+             <div className="w-full max-w-[160px] mx-auto">
       <div className="card h-48 bg-blue-200 shadow-xl transition-all duration-200 rounded-t-full border-2 border-solid border-purple-600 hover:rounded-none overflow-hidden">
         {/* Image */}
         <figure className="overflow-hidden">
           <img
             src={cat.photoUrl} // এখানে তোর image path দিবি
             alt={cat.categoryName}
-            className="h-[120px] w-[120px] object-conver transition-transform duration-500 hover:scale-110"
+            className="h-[120px] w-full object-cover transition-transform duration-500 hover:scale-110"
           />
         </figure>
 

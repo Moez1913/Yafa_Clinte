@@ -16,6 +16,13 @@ import AllProducts from './components/Pages/AllProducts.jsx';
 import AuthProvider from './providers/AuthProvider.jsx';
 import CategoryBrand from './components/Pages/CategoryBrand.jsx';
 import Products from './components/Pages/Products.jsx';
+import PrivetRout from './components/Routes/PrivetRout';
+import ShopProvider from './providers/ShopProvider.jsx';
+import { Cart } from './components/Pages/Cart.jsx';
+import OrderPage from './components/Pages/OrderPage.jsx';
+import WishList from './components/Pages/WishList.jsx';
+import AdminDashboard from './components/AdminDashboard.jsx'
+import ProductDetails from './components/Pages/ProductDetails.jsx';
 
 const router = createBrowserRouter([
   {
@@ -30,6 +37,11 @@ const router = createBrowserRouter([
        path:'/allProducts',
        element:<AllProducts></AllProducts>,
        loader:()=>fetch('http://localhost:5000/products')
+      },
+      {
+        path:'/product/:id',
+        element:<ProductDetails></ProductDetails>,
+        loader:({params})=>fetch(`http://localhost:5000/products/${params.id}`)
       },
       {
         path: "/catebrand",
@@ -71,16 +83,40 @@ const router = createBrowserRouter([
       },
       {
         path:'/products',
-        element:<Products></Products>
+        element:<Products></Products>,
+        loader:()=>fetch('http://localhost:5000/products')
 
-      }
+      },
+      {
+        path:'/cart',
+        element:<Cart></Cart>,
+        
+      },
+      {
+        path:'wishlist',
+        element:<WishList></WishList>
+      },
+      {
+        path:'/OrderPage',
+        element:<OrderPage></OrderPage>
+      },
+      {
+    path: '/admin',
+    element: (
+      <PrivetRout requiredRole="admin">
+        <AdminDashboard></AdminDashboard>
+      </PrivetRout>
+    )
+  }
     ]
   },
 ]);
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <RouterProvider router={router} />
+     <ShopProvider>
+       <RouterProvider router={router} />
+     </ShopProvider>
     </AuthProvider>
   </StrictMode>,
 )
