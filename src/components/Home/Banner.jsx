@@ -1,6 +1,6 @@
 import React from "react";
-import cover from "../../assets/Cover.jpg";
-import profile from "../../assets/Profile.png";
+import cover from 
+import profile from "../../assets/yafaaLogo.jpeg";
 
 const Banner = () => {
   return (

@@ -2,15 +2,8 @@ import React, { useContext } from 'react'
 import { AuthContext } from '../../providers/AuthProvider';
 import { Link } from 'react-router-dom';
 
-/**
- * PrivateRoute Component
- * @param {Object} props
- * @param {React.ReactNode} props.children - Component to render if authorized
- * @param {string|string[]} props.requiredRole - Single role or array of allowed roles
- * @returns {React.ReactNode} Children if authorized, otherwise modal
- */
-const PrivetRout = ({ children, requiredRole }) => {
-    const { user, userRole, loading } = useContext(AuthContext);
+const PrivetRout = ({ children }) => {
+    const { user, loading } = useContext(AuthContext);
 
     // If still loading, show loading state
     if (loading) {
@@ -35,25 +28,8 @@ const PrivetRout = ({ children, requiredRole }) => {
     }
 
     // Check if user has required role
-    if (requiredRole) {
-        const hasPermission = Array.isArray(requiredRole)
-            ? requiredRole.includes(userRole)
-            : userRole === requiredRole;
-
-        if (!hasPermission) {
-            return (
-                <dialog open className="modal modal-bottom sm:modal-middle">
-                    <div className="modal-box">
-                        <h3 className="font-bold text-lg">Access Denied</h3>
-                        <p className="py-4">You don't have permission to access this page. Required role: {Array.isArray(requiredRole) ? requiredRole.join(', ') : requiredRole}</p>
-                        <div className="modal-action">
-                            <Link to="/" className="btn btn-primary">Go Home</Link>
-                        </div>
-                    </div>
-                </dialog>
-            )
-        }
-    }
+   
+    
 
     // User is authenticated and has required role
     return children;

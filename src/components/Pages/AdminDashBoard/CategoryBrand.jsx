@@ -3,11 +3,10 @@ import { RiDeleteBin2Line } from "react-icons/ri";
 import { useLoaderData } from "react-router-dom";
 
 const CategoryBrand = () => {
-  const { categorys, brands } = useLoaderData();
+  const  categorys = useLoaderData();
   const [categoryList, setCategorys] = useState(categorys);
   const [oldCate, setOldCate] = useState([]);
-  const [oldBrand, setOldBrand] = useState([]);
-  const [brandList, setBrandList] = useState(brands);
+  
   const [editingImageFile, setEditingImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
@@ -71,26 +70,7 @@ const CategoryBrand = () => {
   };
 
   // dlete brand 
-  const deletBrand = (_id)=>{
-    fetch(`http://localhost:5000/brands/${_id}`,{
-      method:"DELETE",
-    })
-     .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        if (data.deletedCount > 0) {
-          const remaining = brandList.filter(
-            (brand) => brand._id !== _id
-          );
-          setBrandList(remaining);
-
-          alert("Deleted Successfully");
-
-          // const remaining = categorys.filter(category => category._id !== _id)
-          // setCategorys(remaining)
-        }
-      });
-  };
+  
 
 
   const handelOldCte = (_id) => {
@@ -104,13 +84,7 @@ const CategoryBrand = () => {
     document.getElementById("my_modal_1").showModal();
   };
 
-  const handelOldBrand = (_id) => {
-   fetch(`http://localhost:5000/brands/${_id}`)
-   .then(res => res.json())
-   .then(data => setOldBrand(data))
-    
-   document.getElementById("my_modal_2").showModal();
-  };
+  
 
  
 
@@ -173,7 +147,7 @@ const CategoryBrand = () => {
     }
   };
   return (
-    <div className="grid grid-cols-2 gap-10 px-10 mx-auto mt-20">
+    <div className="grid gap-10 px-10 mx-auto mt-20">
       <section className="">
         <h2 className="text-3xl font-bold text-center mb-8">All Categorys</h2>
         <div className="grid grid-cols-2 gap-2 border-2 border-solid border-purple-500 p-2">
@@ -267,23 +241,7 @@ const CategoryBrand = () => {
         </div>
       </section>
       {/* brands section */}
-      <section>
-        <h2 className="text-3xl font-bold text-center mb-8">All Brands</h2>
-        <div className="grid grid-cols-2 gap-2">
-          {brandList.map((brand) => (
-            <div class=" flex gap-5 bg-base-200 px-5">
-              <div class="collapse-title text-xl font-medium">
-                {brand.brandName}
-              </div>
-              <button onClick={() => deletBrand(brand._id)} className="text-red-500">
-                <RiDeleteBin2Line />
-              </button>
-              
-              
-            </div>
-          ))}
-        </div>
-      </section>
+      
     </div>
   );
 };

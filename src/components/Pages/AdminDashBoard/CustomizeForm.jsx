@@ -1,5 +1,5 @@
 import React from 'react';
-import AddCategoryForm from '../AddCategoryForm';
+import AddCategoryForm from './AddCategoryForm';
 
 const CustomizeForm = () => {
     return (

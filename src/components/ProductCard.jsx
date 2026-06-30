@@ -7,6 +7,11 @@ const ProductCard = ({product}) => {
   
     const{productName,image,price,discount, category,brand, AdCategory, forWhom}=product;
     const{addToWishlist,addToCart}=useContext(ShopContext)
+
+    const stopCardNav = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
     
     return (
        
@@ -21,7 +26,14 @@ const ProductCard = ({product}) => {
       )}
 
       {/* Favorite Button */}
-      <button onClick={()=>addToWishlist(product)} className="absolute top-2 right-2 z-10 bg-white p-1.5 sm:p-2 rounded-full shadow hover:bg-pink-400 transition hover:text-purple-900 ">
+      <button
+        type="button"
+        onClick={(e) => {
+          stopCardNav(e);
+          addToWishlist(product);
+        }}
+        className="absolute top-2 right-2 z-10 bg-white p-1.5 sm:p-2 rounded-full shadow hover:bg-pink-400 transition hover:text-purple-900 "
+      >
         <FaHeart size={14} className="sm:block hidden" />
         <FaHeart size={12} className="sm:hidden" />
       </button>
@@ -44,12 +56,23 @@ const ProductCard = ({product}) => {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-1 sm:gap-2 mt-2 sm:mt-3">
-          <button onClick={()=>addToCart(product)} className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium transition whitespace-nowrap">
+          <button
+            type="button"
+            onClick={(e) => {
+              stopCardNav(e);
+              addToCart(product);
+            }}
+            className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium transition whitespace-nowrap"
+          >
             <FaShoppingCart size={12} className="sm:block hidden" />
             <FaShoppingCart size={10} className="sm:hidden" />
             Add
           </button>
-          <button className="flex-1 bg-primary text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium transition hover:bg-secondary whitespace-nowrap">
+          <button
+            type="button"
+            onClick={stopCardNav}
+            className="flex-1 bg-primary text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium transition hover:bg-secondary whitespace-nowrap"
+          >
             Buy Now
           </button>
         </div>

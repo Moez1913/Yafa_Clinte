@@ -20,6 +20,7 @@ const SignUp = () => {
     e.preventDefault();
     const form = e.target;
     const name = form.name.value;
+    const phone=form.phone.value
     const email = form.email.value;
     const password = form.password.value;
     const confirm = form.confirm.value;
@@ -38,7 +39,7 @@ const SignUp = () => {
         const createdUser = result.user;
 
         // set displayName
-        updateProfile(createdUser, { displayName: name })
+        updateProfile(createdUser, { displayName: name,phone:phone })
         .then(() => console.log('Name set successfully'))
         .catch(err => console.log(err));
          sendEmailVerification(createdUser)
@@ -53,7 +54,7 @@ const SignUp = () => {
       .catch(err => console.log("Email verification error:", err));
 
         // save to backend
-        const userForDB = { name, email: createdUser.email, uid: createdUser.uid };
+        const userForDB = { name,phone:phone ,email: createdUser.email, uid: createdUser.uid };
 
         fetch('http://localhost:5000/users', {
           method: 'POST',
@@ -92,23 +93,27 @@ const SignUp = () => {
 
         <form onSubmit={handleSignUp} className="space-y-4">
           <div>
-            <label className="label text-white">Full Name</label>
-            <input type="text" name='name' placeholder="Enter your full name" className="input input-bordered w-full bg-transparent text-white placeholder-white/60" required />
+            <label  className="label text-white">Full Name</label>
+            <input required type="text" name='name' placeholder="Enter your full name" className="input input-bordered w-full bg-transparent text-white placeholder-white/60"  />
+          </div>
+          <div>
+            <label className="label text-white">Phone Number</label>
+            <input required type="number" name='phone' placeholder="Enter your PhoneNumber" className="input input-bordered w-full bg-transparent text-white placeholder-white/60" />
           </div>
 
           <div>
             <label className="label text-white">Email</label>
-            <input type="email" name='email' placeholder="Enter your email" className="input input-bordered w-full bg-transparent text-white placeholder-white/60" required />
+            <input required type="email" name='email' placeholder="Enter your email" className="input input-bordered w-full bg-transparent text-white placeholder-white/60"  />
           </div>
 
           <div>
             <label className="label text-white">Password</label>
-            <input type="password" name='password' placeholder="Enter your password" className="input input-bordered w-full bg-transparent text-white placeholder-white/60" required />
+            <input required type="password" name='password' placeholder="Enter your password" className="input input-bordered w-full bg-transparent text-white placeholder-white/60"  />
           </div>
 
           <div>
             <label className="label text-white">Confirm Password</label>
-            <input type="password" name='confirm' placeholder="Confirm your password" className="input input-bordered w-full bg-transparent text-white placeholder-white/60" required />
+            <input required type="password" name='confirm' placeholder="Confirm your password" className="input input-bordered w-full bg-transparent text-white placeholder-white/60"  />
           </div>
 
           <button className="btn w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl">
