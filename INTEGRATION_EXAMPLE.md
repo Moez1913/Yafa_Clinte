@@ -83,12 +83,12 @@ export const routerConfig = [
       {
         path: '/allProducts',
         element: <AllProducts></AllProducts>,
-        loader: () => fetch('http://localhost:5000/products')
+        loader: () => fetch('https://yafaa-hop-server.vercel.app/products')
       },
       {
         path: '/products',
         element: <Products></Products>,
-        loader: () => fetch('http://localhost:5000/products')
+        loader: () => fetch('https://yafaa-hop-server.vercel.app/products')
       },
       // ... other routes
     ]

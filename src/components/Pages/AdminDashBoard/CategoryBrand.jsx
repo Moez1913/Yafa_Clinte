@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { RiDeleteBin2Line } from "react-icons/ri";
 import { useLoaderData } from "react-router-dom";
+import UseAxiosSecure from "../../../Hooks/Axios/UseAxiosSecure";
 
 const CategoryBrand = () => {
   const  categorys = useLoaderData();
   const [categoryList, setCategorys] = useState(categorys);
   const [oldCate, setOldCate] = useState([]);
-  
+  const axiosSecure=UseAxiosSecure()
   const [editingImageFile, setEditingImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
@@ -49,13 +50,9 @@ const CategoryBrand = () => {
 
   const deleteCategory = (_id) => {
 
-    fetch(`http://localhost:5000/categories/${_id}`, {
-      method: "DELETE",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        if (data.deletedCount > 0) {
+    axiosSecure.delete(`https://yafaa-hop-server.vercel.app/categories/${_id}`)
+      .then(res =>{
+  if (res.data.deletedCount > 0) {
           const remaining = categoryList.filter(
             (category) => category._id !== _id
           );
@@ -66,7 +63,8 @@ const CategoryBrand = () => {
           // const remaining = categorys.filter(category => category._id !== _id)
           // setCategorys(remaining)
         }
-      });
+      } )
+      
   };
 
   // dlete brand 
@@ -74,7 +72,7 @@ const CategoryBrand = () => {
 
 
   const handelOldCte = (_id) => {
-   fetch(`http://localhost:5000/categories/${_id}`)
+   fetch(`https://yafaa-hop-server.vercel.app/categories/${_id}`)
    .then(res => res.json())
    .then(data => {
      setOldCate(data);
@@ -110,7 +108,7 @@ const CategoryBrand = () => {
         publicId = imageData.publicId;
       }
 
-      fetch(`http://localhost:5000/categories/${id}`, {
+      fetch(`https://yafaa-hop-server.vercel.app/categories/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, img, publicId }),

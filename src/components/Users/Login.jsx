@@ -1,6 +1,6 @@
 
 import { Link, useNavigate } from 'react-router-dom';
-import bg from '../../assets/Profile.png'
+import bg from '../../assets/yafaaLogo.png'
 
 import React, { useContext, useState } from "react";
 import { AuthContext } from '../../providers/AuthProvider';
@@ -21,19 +21,16 @@ const Login = () => {
 
   signInUser(email, password)
     .then((result) => {
-      const user = result.user.email;
-      console.log(user);
-     
-     
+      const userEmail = result.user?.email || "user";
 
       Swal.fire({
         icon: "success",
         title: "SignIn Successful",
-        text: `Welcome, ${user}!`,
+        text: `Welcome, ${userEmail}!`,
         showConfirmButton: false,
         timer: 2000,
       }).then(() => {
-        navigate("/"); // ✅ এখানেই redirect
+        navigate("/");
       });
 
       form.reset();

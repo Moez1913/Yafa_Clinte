@@ -1,32 +1,41 @@
 import { useEffect, useState } from "react";
-
+import Swal from "sweetalert2";
+import UseAxios from "../../../Hooks/Axios/UseAxios";
+import UseAxiosSecure from "../../../Hooks/Axios/UseAxiosSecure";
 
 const AddProduct = () => {
-    const [categories,setCategories]=useState([]);
-    const [brands,setBrands]= useState([]) ;
-    const [imageFile, setImageFile] = useState(null);
-    const [uploading, setUploading] = useState(false);
+  const axiosPublic = UseAxios();
+  const axiosSecure = UseAxiosSecure();
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [imageFile, setImageFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
-    useEffect(()=>{
-      fetch('http://localhost:5000/categories')
-      .then(res => res.json())
-      .then(data => {
-          setCategories(data);
-      })
-    },[])
+  useEffect(() => {
+    const loadOptions = async () => {
+      try {
+        const [categoriesRes, brandsRes] = await Promise.all([
+          axiosPublic.get("/categories"),
+          axiosPublic.get("/brands"),
+        ]);
 
-    useEffect(()=>{
-      fetch('http://localhost:5000/brands')
-      .then(res => res.json())
-      .then(data => {
-          setBrands(data);
-      })
-    },[])
+        setCategories(categoriesRes.data || []);
+        setBrands(brandsRes.data || []);
+      } catch (error) {
+        console.error("Failed to load product options:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Unable to load form options",
+          text: error.message,
+        });
+      }
+    };
 
-   
+    loadOptions();
+  }, [axiosPublic]);
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
     }
@@ -34,114 +43,92 @@ const AddProduct = () => {
 
   const uploadImageToCloudinary = async (file) => {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'korean_dewdrop');
+    formData.append("file", file);
+    formData.append("upload_preset", "yafaa_shop");
 
-    try {
-      console.log('Uploading to Cloudinary...');
-      console.log('File name:', file.name);
-      console.log('File size:', file.size);
-      
-      const response = await fetch(
-        'https://api.cloudinary.com/v1_1/djp63rqr8/image/upload',
-        {
-          method: 'POST',
-          body: formData
-        }
-      );
-      
-      const data = await response.json();
-      
-      console.log('Cloudinary response:', data);
-      
-      if (!response.ok) {
-        const errorMsg = data.error?.message || response.statusText;
-        throw new Error(`Cloudinary error: ${errorMsg}`);
+    const response = await fetch(
+      "https://api.cloudinary.com/v1_1/dxdh1s6lf/image/upload",
+      {
+        method: "POST",
+        body: formData,
       }
-      
-      if (!data.secure_url) {
-        throw new Error('No URL returned from Cloudinary');
-      }
-      
-      console.log('Image uploaded successfully:', data.secure_url);
-      return { url: data.secure_url, publicId: data.public_id };
-    } catch (error) {
-      console.error('Cloudinary upload error:', error);
-      alert('Image upload failed: ' + error.message);
-      return null;
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || "Image upload failed");
     }
+
+    if (!data.secure_url) {
+      throw new Error("No image URL returned from Cloudinary");
+    }
+
+    return { url: data.secure_url, publicId: data.public_id };
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!imageFile) {
-        alert('Please select an image');
-        return;
+      Swal.fire({ icon: "warning", title: "Please select an image first" });
+      return;
+    }
+
+    const form = e.target;
+    const productData = {
+      productName: form.productName.value.trim(),
+      price: form.price.value,
+      discount: form.discount.value || 0,
+      category: form.category.value,
+      brand: form.brand.value,
+      AdCategory: form.AdCategory.value,
+      forWhom: form.forWhom.value,
+      description: form.description.value.trim(),
+      ingredients: form.ingredients.value.trim(),
+      howToUse: form.howToUse.value.trim(),
+      origin: form.origin.value.trim()
+    };
+
+    if (
+      !productData.productName ||
+      !productData.price ||
+      !productData.category ||
+      !productData.brand ||
+      !productData.forWhom
+    ) {
+      Swal.fire({ icon: "warning", title: "Please fill in all required fields" });
+      return;
     }
 
     setUploading(true);
 
     try {
-      // Upload image to Cloudinary first
       const imageData = await uploadImageToCloudinary(imageFile);
-
-      if (!imageData) {
-        setUploading(false);
-        return;
-      }
-
-      const form = e.target;
-      const productName = form.productName.value;
-      const price = form.price.value;
-      const discount = form.discount.value;
-      const category = form.category.value;
-      const brand = form.brand.value;
-      const AdCategory = form.AdCategory.value;
-      const forWhom = form.forWhom.value;
-
-      const newProduct = {
-        productName,
-        image: imageData.url, // Cloudinary URL
-        publicId: imageData.publicId, // Cloudinary public_id
-        price,
-        discount,
-        category,
-        brand,
-        AdCategory,
-        forWhom
-      };
-
-      const response = await fetch('http://localhost:5000/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newProduct)
+      const { data } = await axiosSecure.post("/products", {
+        ...productData,
+        image: imageData.url,
+        publicId: imageData.publicId,
       });
 
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
       if (data.insertedId) {
-        alert('Product added successfully');
+        Swal.fire({ icon: "success", title: "Product added successfully" });
         form.reset();
         setImageFile(null);
       } else {
-        throw new Error('Product not inserted');
+        throw new Error("Product could not be saved");
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('Error: ' + error.message);
+      console.error("Error adding product:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Failed to add product",
+        text: error.message,
+      });
     } finally {
       setUploading(false);
     }
   };
-
- 
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
@@ -151,19 +138,17 @@ const AddProduct = () => {
         </h2>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
-          {/* Product Name */}
           <div>
             <label className="block font-medium mb-1">Product Name</label>
             <input
               type="text"
               name="productName"
-              
               className="input input-bordered w-full"
               placeholder="Enter product name"
               required
             />
           </div>
-          {/* Photo Upload */}
+
           <div>
             <label className="block font-medium mb-1">Upload Image</label>
             <input
@@ -177,29 +162,26 @@ const AddProduct = () => {
             {imageFile && (
               <div className="mt-3">
                 <p className="text-sm text-green-600 mb-2">Selected: {imageFile.name}</p>
-                <img 
-                  src={URL.createObjectURL(imageFile)} 
-                  alt="Preview" 
+                <img
+                  src={URL.createObjectURL(imageFile)}
+                  alt="Preview"
                   className="w-full h-64 object-cover rounded-lg border-2 border-gray-300"
                 />
               </div>
             )}
           </div>
 
-          {/* Price */}
           <div>
             <label className="block font-medium mb-1">Price</label>
             <input
               type="number"
               name="price"
-              
               className="input input-bordered w-full"
               placeholder="Enter price"
               required
             />
           </div>
 
-          {/* Discount */}
           <div>
             <label className="block font-medium mb-1">Discount (%)</label>
             <input
@@ -210,111 +192,110 @@ const AddProduct = () => {
             />
           </div>
 
-          {/* Category */}
           <div>
             <label className="block font-medium mb-1">Category</label>
-            <select
-              name="category"
-             
-              className="select select-bordered w-full"
-              required
-            >
+            <select name="category" className="select select-bordered w-full" required>
               <option value="">-- Select Category --</option>
-              
-               {
-                categories.map(category => (
-                  <option key={category._id} value={category.categoryName}>
-                    {category.categoryName}
-                  </option>
-                ))
-               }
-              
+              {categories.map((category) => (
+                <option key={category._id} value={category.categoryName}>
+                  {category.categoryName}
+                </option>
+              ))}
             </select>
           </div>
 
-          {/* Brand */}
           <div>
             <label className="block font-medium mb-1">Brand</label>
-            <select
-              name="brand"
-          
-              className="select select-bordered w-full"
-              required
-            >
+            <select name="brand" className="select select-bordered w-full" required>
               <option value="">-- Select Brand --</option>
-             
-                {
-                  brands.map(brand => (
-                    <option key={brand._id} value={brand.brandName}>
-                      {brand.brandName}
-                    </option>
-                  ))
-                }
-            
+              {brands.map((brand) => (
+                <option key={brand._id} value={brand.brandName}>
+                  {brand.brandName}
+                </option>
+              ))}
             </select>
           </div>
 
-          {/* Additional Category */}
-         <div>
+          <div>
             <label className="block font-medium mb-1">Additional Category</label>
-            <select
-              name="AdCategory"
-              className="select select-bordered w-full"
-                 
-            >
+            <select name="AdCategory" className="select select-bordered w-full">
               <option value="">-- Select Category --</option>
-        
-                <option>
-                  Popular Product
-                </option>
-                <option>
-                  New Arrival
-                </option>
-                
-                <option>
-                  Combo
-                </option>
-                <option>
-                  Special offer
-                </option>
-                
-         
+              <option value="Popular Product">Popular Product</option>
+              <option value="New Arrival">New Arrival</option>
+              <option value="Combo">Combo</option>
+              <option value="Special offer">Special offer</option>
             </select>
           </div>
 
-          {/* For (Men/Women/Kids/Unisex) */}
           <div>
             <label className="block font-medium mb-1">For</label>
-            <select
-              name="forWhom"
-             
-              className="select select-bordered w-full"
-              required
-            >
+            <select name="forWhom" className="select select-bordered w-full" required>
               <option value="">-- Select --</option>
-          
-                <option>
-                 Oily
-                </option>
-                <option>
-                 Dray
-                </option>
-                <option>
-                 Combination
-                </option>
-                <option>
-                 Combination To Dry
-                </option>
-                <option>
-                 Combination To Oily
-                </option>
-        
+              <option value="Oily">Oily</option>
+              <option value="Dry">Dry</option>
+              <option value="Combination">Combination</option>
+              <option value="Combination To Dry">Combination To Dry</option>
+              <option value="Combination To Oily">Combination To Oily</option>
             </select>
           </div>
+           <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-1">
+          <label className="label">
+            <span className="label-text font-semibold">
+              Description  
+            </span>
+          </label>
 
-          {/* Submit */}
+          <textarea
+            name="description"
+            placeholder="Enter the product description"
+            className="textarea textarea-bordered w-full h-32"
+            required
+          ></textarea>
+        </div>
+
+        <div className="flex-1">
+          <label className="label">
+            <span className="label-text font-semibold">
+             Ingredients 
+            </span>
+          </label>
+
+          <textarea
+            name="ingredients"
+            placeholder="Enter the ingredients"
+            className="textarea textarea-bordered w-full h-32"
+          ></textarea>
+        </div>
+      </div>
+      <div className="flex flex-col md:flex-row gap-4">
+         <div className="flex-1">
+          <label className="label">
+            <span className="label-text font-semibold">
+              How to Use
+            </span>
+          </label>
+
+          <textarea
+            name="howToUse"
+            placeholder="Write any special instructions..."
+            className="textarea textarea-bordered w-full h-32"
+          ></textarea>
+        </div>
+         <div className="flex-1">
+            <label className="block font-medium mb-1">Origin</label>
+            <input
+              type="text"
+              name="origin"
+              className="input input-bordered w-full"
+              placeholder="Enter Origin"
+              required
+            />
+          </div>
+      </div>
+
           <button type="submit" className="btn btn-primary mt-4" disabled={uploading}>
-            {uploading ? 'Uploading...' : 'Add Product'}
+            {uploading ? "Uploading..." : "Add Product"}
           </button>
         </form>
       </div>

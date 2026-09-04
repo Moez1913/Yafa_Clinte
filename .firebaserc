@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "korean-dewdrop-meem"
-  }
+    "default": "yafaa-shop",
+    "yafaa": "yafaa-41766",
+    "yafaa-shop": "yafaa-shop"
+  },
+  "targets": {},
+  "etags": {}
 }

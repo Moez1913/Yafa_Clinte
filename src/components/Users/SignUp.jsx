@@ -40,8 +40,8 @@ const SignUp = () => {
 
         // set displayName
         updateProfile(createdUser, { displayName: name,phone:phone })
-        .then(() => console.log('Name set successfully'))
-        .catch(err => console.log(err));
+        .then(() => ('Name set successfully'))
+        .catch(err => (err));
          sendEmailVerification(createdUser)
       .then(() => {
         Swal.fire({
@@ -51,12 +51,12 @@ const SignUp = () => {
           showConfirmButton: true,
         });
       })
-      .catch(err => console.log("Email verification error:", err));
+      .catch(err => ("Email verification error:", err));
 
         // save to backend
         const userForDB = { name,phone:phone ,email: createdUser.email, uid: createdUser.uid };
 
-        fetch('http://localhost:5000/users', {
+        fetch('https://yafaa-hop-server.vercel.app/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(userForDB)
@@ -77,7 +77,7 @@ const SignUp = () => {
         form.reset();
       })
       .catch(error => {
-        console.log(error);
+        (error);
         Swal.fire({
           icon: 'error',
           title: 'Sign Up Failed',

@@ -9,29 +9,70 @@ const AllProducts = () => {
      const [searchParams]=useSearchParams();
      const axiospublic=UseAxios()
 
-    const brand=searchParams.get("brand");
-    const category=searchParams.get("category");
-    const search=searchParams.get("search");
+    const brand = searchParams.get("brand");
+    const category = searchParams.get("category");
+    const adCategory = searchParams.get("adCategory");
+    const search = searchParams.get("search");
 
     useEffect(() => {
   const params = new URLSearchParams();
 
   if (brand) params.append("brand", brand);
   if (category) params.append("category", category);
+  if (adCategory) params.append("adCategory", adCategory);
   if (search) params.append("search", search);
 
   const url = `/products?${params.toString()}`;
 
-  console.log(url);
+  (url);
 
   axiospublic.get(url).then((res) => {
-    setproducts(res.data);
+    let filteredProducts = res.data || [];
+
+    if (adCategory) {
+      const currentAdCategory = adCategory.toLowerCase();
+      filteredProducts = filteredProducts.filter(
+        (product) =>
+          product.AdCategory && product.AdCategory.toLowerCase() === currentAdCategory
+      );
+    }
+
+    if (category) {
+      const currentCategory = category.toLowerCase();
+      filteredProducts = filteredProducts.filter(
+        (product) => product.category && product.category.toLowerCase() === currentCategory
+      );
+    }
+
+    if (brand) {
+      const currentBrand = brand.toLowerCase();
+      filteredProducts = filteredProducts.filter(
+        (product) => product.brand && product.brand.toLowerCase() === currentBrand
+      );
+    }
+
+    if (search) {
+      const searchValue = search.toLowerCase();
+      filteredProducts = filteredProducts.filter(
+        (product) =>
+          product.productName?.toLowerCase().includes(searchValue) ||
+          product.category?.toLowerCase().includes(searchValue) ||
+          product.brand?.toLowerCase().includes(searchValue)
+      );
+    }
+
+    setproducts(filteredProducts);
   });
-}, [brand, category, search, axiospublic]);
+}, [brand, category, search, adCategory, axiospublic]);
 
  
 
+    const filterLabel = adCategory || category || brand || (search ? `Search: ${search}` : "All Products");
+
     return <>
+      <div className="px-4 md:px-8 lg:px-16 mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">{filterLabel}</h1>
+      </div>
       {products.length === 0 ? (
   <div className="flex flex-col items-center justify-center py-24">
     <span className="text-6xl">🔍</span>

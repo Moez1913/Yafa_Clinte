@@ -1,6 +1,6 @@
 import React from "react";
-import cover from 
-import profile from "../../assets/yafaaLogo.jpeg";
+import logo from '../../assets/yafaaLogo.png'
+import cover from '../../assets/yafaaCoverF.jpeg'
 
 const Banner = () => {
   return (
@@ -8,7 +8,7 @@ const Banner = () => {
       {/* Left Card Section */}
       <div className="md:w-1/3 w-full bg-white/80 shadow-lg rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center text-center">
         <img
-          src={profile}
+          src={logo}
           alt="Profile"
           className="w-44 h-44 rounded-full border-4 border-pink-400 shadow-md mb-4"
         />
@@ -30,13 +30,7 @@ const Banner = () => {
           className="w-full h-full object-cover rounded-r-2xl"
         />
         {/* Overlay Text */}
-        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center text-white p-4 rounded-r-2xl">
-          <h2 className="text-4xl font-bold mb-2">Glow With Confidence</h2>
-          <p className="max-w-lg text-lg">
-            Handpicked Korean beauty products that enhance your natural
-            beauty. Because your skin deserves the best.
-          </p>
-        </div>
+
       </div>
     </div>
   );

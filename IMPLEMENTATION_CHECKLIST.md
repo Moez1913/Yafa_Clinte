@@ -186,7 +186,7 @@ Before deploying to production:
 
 - [ ] **Remove all dev/test code**
   - [ ] Remove temporary admin buttons
-  - [ ] Remove console.log statements for debugging
+  - [ ] Remove  statements for debugging
   - [ ] Remove test routes
 
 - [ ] **Security Review**

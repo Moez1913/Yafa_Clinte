@@ -193,7 +193,7 @@ import { setUserRole, getUsersByRole } from './utils/roleUtils';
 async function updateUserRole(userId, newRole) {
   try {
     await setUserRole(userId, newRole);
-    console.log(`User updated to ${newRole}`);
+    (`User updated to ${newRole}`);
   } catch (error) {
     console.error('Failed to update:', error);
   }
@@ -206,7 +206,7 @@ import { getUsersByRole } from './utils/roleUtils';
 
 async function showAdmins() {
   const admins = await getUsersByRole('admin');
-  console.log('Admins:', admins);
+  ('Admins:', admins);
   // admins = [{ id, email, role, createdAt }, ...]
 }
 ```

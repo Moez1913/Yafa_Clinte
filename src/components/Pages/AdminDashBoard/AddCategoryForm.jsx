@@ -1,21 +1,23 @@
 import { useEffect, useState } from "react";
+import UseAxiosSecure from "../../../Hooks/Axios/UseAxiosSecure";
 
 
 const AddCategoryForm = () => {
   const [oldBrand ,setOldBrand] =useState([])
   const [brands,setBrands]= useState([oldBrand]);
+  const axiosSecure = UseAxiosSecure();
 
   // image upload state
   const [imageFile, setImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(()=>{
-    fetch('http://localhost:5000/brands')
-    .then(res => res.json())
-    .then(data => {
-        setOldBrand(data);
+    axiosSecure.get('https://yafaa-hop-server.vercel.app/brands')
+    .then(res => {
+      setOldBrand(res.data)
     })
-  },[])
+    
+  },[axiosSecure])
 
   
 
@@ -31,11 +33,11 @@ const handleImageChange = (e) => {
 const uploadImageToCloudinary = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'korean_dewdrop');
+    formData.append('upload_preset', 'yafaa_shop');
 
     try {
       const response = await fetch(
-        'https://api.cloudinary.com/v1_1/djp63rqr8/image/upload',
+        'https://api.cloudinary.com/v1_1/dxdh1s6lf/image/upload',
         {
           method: 'POST',
           body: formData
@@ -83,15 +85,9 @@ const handleCategory= async e =>{
         publicId: imageData.publicId
       };
 
-      const res = await fetch('http://localhost:5000/categories',{
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(category)
-      });
-      const data = await res.json();
-      if(data.insertedId){
+      const res = await axiosSecure.post('https://yafaa-hop-server.vercel.app/categories',category)
+     
+      if(res.data.insertedId){
         alert('Category added successfully');
         form.reset();
         setImageFile(null);
@@ -117,28 +113,21 @@ const handleBrand= e =>{
       brandName
      
     };
-    console.log(newbrand)
+    (newbrand)
     
     
-  fetch('http://localhost:5000/brands',{
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(newbrand)
-  
-  } )
-  .then(res => res.json())
-  .then(data => {
-    if(data.insertedId){
+  axiosSecure.post('https://yafaa-hop-server.vercel.app/brands',newbrand
+    )
+  .then(res => {
+      if(res.data.insertedId){
       alert('Brands added successfully')
     const allBrands = [...oldBrand, newbrand]
     setBrands(allBrands)
-      console.log(brands)
-      
+  
       form.reset()
     }
   })
+ 
 
 }
 

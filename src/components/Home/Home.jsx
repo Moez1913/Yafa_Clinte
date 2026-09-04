@@ -35,19 +35,36 @@ const Home = () => {
       </Link>
     );
 
-    useEffect(()=>{
-        // load products and categories in parallel
-        Promise.all([
-            fetch('http://localhost:5000/products').then(r=>r.json()),
-            fetch('http://localhost:5000/categories').then(r=>r.json())
-        ])
-        .then(([prodData, catData])=>{
-            setProducts(prodData);
-            setCategorys(catData);
-        })
-        .catch(err=>console.error(err))
-        .finally(()=>setLoading(false));
-    },[])
+   useEffect(() => {
+  const apiBaseUrl = "https://yafaa-hop-server.vercel.app";
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+
+      const [productRes, categoryRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/products`, {
+          cache: "no-store",
+        }),
+        fetch(`${apiBaseUrl}/categories`, {
+          cache: "no-store",
+        }),
+      ]);
+
+      const products = await productRes.json();
+      const categories = await categoryRes.json();
+
+      setProducts(products);
+      setCategorys(categories);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadData();
+}, []);
 const popularProducts = products.filter(product => product.AdCategory === "Popular Product");
 
 const newArivel= products.filter(product => product.AdCategory === "New Arrival");

@@ -3,8 +3,13 @@ import { useState } from 'react';
 import { RiDeleteBin2Line } from 'react-icons/ri';
 import { MdEdit } from 'react-icons/md';
 import { useLoaderData } from 'react-router-dom';
+import UseAxiosSecure from '../../../Hooks/Axios/UseAxiosSecure';
+import Swal from 'sweetalert2';
+import UseAxios from '../../../Hooks/Axios/UseAxios';
 
 const Products = () => {
+  const axiosSecure = UseAxiosSecure();
+  const axiosPublic=UseAxios();
      const initialProducts = useLoaderData();
      const [productList, setProducts] = useState(initialProducts);
      const [editingProduct, setEditingProduct] = useState(null);
@@ -18,24 +23,25 @@ const Products = () => {
        brand: '',
        AdCategory: '',
        forWhom: '',
-       image: ''
+       image: '',
+       description: '',
+       ingredients: '',
+       howToUse: '',
+       origin: ''
      });
 
      const handleDelete = (_id) => {
        if (window.confirm('Are you sure you want to delete this product?')) {
-         fetch(`http://localhost:5000/products/${_id}`, {
-           method: 'DELETE'
-         })
-         .then(res => res.json())
-         .then(data => {
-           console.log('Delete response:', data);
-           if (data.deletedCount > 0 || data.acknowledged) {
+         axiosSecure.delete(`/products/${_id}`)
+         .then(res => {
+     if (res.data.deletedCount > 0 || res.data.acknowledged) {
              setProducts(productList.filter(p => p._id !== _id));
              alert('Product deleted successfully');
            } else {
              alert('Failed to delete product');
            }
          })
+        
          .catch(error => {
           //  console.error('Delete error:', error);
            alert('Error deleting product: ' + error.message);
@@ -53,7 +59,11 @@ const Products = () => {
          brand: product.brand,
          AdCategory: product.AdCategory,
          forWhom: product.forWhom,
-         image: product.image || ''
+         image: product.image || '',
+          description: product.description || '',
+          ingredients: product.ingredients || '',
+          howToUse: product.howToUse || '',
+          origin: product.origin || ''
        });
        document.getElementById("edit_modal").showModal();
      };
@@ -106,62 +116,80 @@ const Products = () => {
        }
      };
 
-     const handleUpdateProduct = async (e) => {
-       e.preventDefault();
-       setUploading(true);
+   const handleUpdateProduct = async (e) => {
+  e.preventDefault();
+  setUploading(true);
 
-       try {
-         let imageUrl = formData.image;
-         let publicId = formData.publicId || '';
+  try {
+    let imageUrl = formData.image;
+    let publicId = formData.publicId || "";
 
-         // If new image selected, upload it to Cloudinary
-         if (editingImageFile) {
-           const imageData = await uploadImageToCloudinary(editingImageFile);
-           if (!imageData) {
-             setUploading(false);
-             return;
-           }
-           imageUrl = imageData.url;
-           publicId = imageData.publicId;
-         }
+    // Upload new image if selected
+    if (editingImageFile) {
+      const imageData = await uploadImageToCloudinary(editingImageFile);
 
-         const updatedFormData = {
-           ...formData,
-           image: imageUrl,
-           publicId: publicId
-         };
-         
-         const response = await fetch(`http://localhost:5000/products/${editingProduct}`, {
-           method: 'PUT',
-           headers: {
-             'Content-Type': 'application/json'
-           },
-           body: JSON.stringify(updatedFormData)
-         });
+      if (!imageData) {
+        setUploading(false);
+        return;
+      }
 
-         const data = await response.json();
-         console.log('Update response:', data);
-         
-         if (data.modifiedCount > 0 || data.acknowledged) {
-           // Update local state
-           const updatedProducts = productList.map(p => 
-             p._id === editingProduct ? { ...p, ...updatedFormData } : p
-           );
-           setProducts(updatedProducts);
-           alert('Product updated successfully');
-           document.getElementById("edit_modal").close();
-           setEditingProduct(null);
-           setEditingImageFile(null);
-         } else {
-           alert('No changes made');
-         }
-       } catch (error) {
-         console.error('Update error:', error);
-         alert('Error updating product: ' + error.message);
-       } finally {
-         setUploading(false);
-       }
-     };
+      imageUrl = imageData.url;
+      publicId = imageData.publicId;
+    }
+
+    const updatedFormData = {
+      ...formData,
+      image: imageUrl,
+      publicId,
+    };
+
+    // Update Product
+    const { data } = await axiosSecure.patch(
+      `/products/${editingProduct}`,
+      updatedFormData
+    );
+
+    ("Update Response:", data);
+
+    if (data.modifiedCount > 0) {
+      const updatedProducts = productList.map((product) =>
+        product._id === editingProduct
+          ? { ...product, ...updatedFormData }
+          : product
+      );
+
+      setProducts(updatedProducts);
+
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Product updated successfully.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      document.getElementById("edit_modal").close();
+      setEditingProduct(null);
+      setEditingImageFile(null);
+    } else {
+      Swal.fire({
+        icon: "info",
+        title: "No Changes",
+        text: "No changes were made.",
+      });
+    }
+  } catch (error) {
+    console.error("Update Error:", error);
+
+    Swal.fire({
+      icon: "error",
+      title: "Update Failed",
+      text: error.response?.data?.message || error.message,
+    });
+  } finally {
+    setUploading(false);
+  }
+};
 
     return (
        <div className="px-10 mx-auto mt-10 mb-10">
@@ -199,14 +227,14 @@ const Products = () => {
                            <div className="flex gap-3">
                              <button
                                onClick={() => handleEdit(product)}
-                               className="btn btn-sm btn-info text-white"
+                               className="btn btn-sm btn-info text-green-500 "
                                title="Edit"
                              >
                                <MdEdit /> Edit
                              </button>
                              <button
                                onClick={() => handleDelete(product._id)}
-                               className="btn btn-sm btn-error text-white"
+                               className="btn btn-sm btn-error text-red-500"
                                title="Delete"
                              >
                                <RiDeleteBin2Line /> Delete
@@ -354,6 +382,69 @@ const Products = () => {
                        required
                      />
                    </div>
+                     <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-1">
+          <label className="label">
+            <span className="label-text font-semibold">
+              Description  
+            </span>
+          </label>
+
+          <textarea
+            name="description"
+             value={formData.description}
+             onChange={handleFormChange}
+            placeholder="Enter the product description"
+            className="textarea textarea-bordered w-full h-32"
+            required
+          ></textarea>
+        </div>
+
+        <div className="flex-1">
+          <label className="label">
+            <span className="label-text font-semibold">
+             Ingredients 
+            </span>
+          </label>
+
+          <textarea
+            name="ingredients"
+            value={formData.ingredients}
+            onChange={handleFormChange}
+            placeholder="Enter the ingredients"
+            className="textarea textarea-bordered w-full h-32"
+          ></textarea>
+        </div>
+      </div>
+      <div className="flex flex-col md:flex-row gap-4">
+         <div className="flex-1">
+          <label className="label">
+            <span className="label-text font-semibold">
+              How to Use
+            </span>
+          </label>
+
+          <textarea
+            name="howToUse"
+            value={formData.howToUse}
+            onChange={handleFormChange}
+            placeholder="Write any special instructions..."
+            className="textarea textarea-bordered w-full h-32"
+          ></textarea>
+        </div>
+         <div className="flex-1">
+            <label className="block font-medium mb-1">Origin</label>
+            <input
+              type="text"
+              name="origin"
+              value={formData.origin}
+              onChange={handleFormChange}
+              className="input input-bordered w-full"
+              placeholder="Enter Origin"
+              required
+            />
+          </div>
+      </div>
 
                    <div className="modal-action">
                      <button type="submit" className="btn btn-primary" disabled={uploading}>

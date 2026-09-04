@@ -9,7 +9,7 @@ const FeaturesSection = () => {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/categories")
+    fetch("https://yafaa-hop-server.vercel.app/categories")
       .then((res) => res.json())
       .then((data) => {
         setCategories(data);
@@ -24,7 +24,7 @@ const FeaturesSection = () => {
 
       <Swiper
         slidesPerView={6}
-        spaceBetween={20}s
+        spaceBetween={20}
         loop={true}
         autoplay={{
           delay: 2000,

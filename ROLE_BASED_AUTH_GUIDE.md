@@ -108,7 +108,7 @@ Get a user's current role
 import { getUserRole } from './utils/roleUtils';
 
 const role = await getUserRole(userId);
-console.log(role); // 'admin', 'moderator', or 'user'
+(role); // 'admin', 'moderator', or 'user'
 ```
 
 #### `getUsersByRole(role)`

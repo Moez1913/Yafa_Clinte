@@ -5,11 +5,8 @@ import {
   signOut,
 } from "firebase/auth";
 import React, { createContext, useEffect, useState } from "react";
-import { auth, db } from "../firebase/firebase.init";
-import axios from "axios";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth } from "../firebase/firebase.init";
 import UseAxios from "../Hooks/Axios/UseAxios";
-
 
 export const AuthContext = createContext(null);
 
@@ -17,39 +14,47 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
-  const axios=UseAxios()
+  const axios = UseAxios();
 
-
- 
-
-  // 🔥 THIS IS THE MISSING PART
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+   const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    try {
+      setLoading(true);
       setUser(currentUser);
-      if(currentUser){  
-        const userInfo={email:currentUser?.email}
-        axios.post('/jwt',userInfo)
-        .then(res=>{
-            console.log('JWT Response:', res.data);
-          if(res.data?.token){
-            localStorage.setItem('access-token', res.data.token)
-          }
-        })
 
-      }else{
-        localStorage.removeItem('access-token')
+      if (currentUser) {
+        const userInfo = {
+          email: currentUser.email,
+        };
+
+        const res = await axios.post("/jwt", userInfo);
+
+        if (res.data?.token) {
+          localStorage.setItem("access-token", res.data.token);
+        } else {
+          localStorage.removeItem("access-token");
+        }
+      } else {
+        localStorage.removeItem("access-token");
       }
-     
+    } catch (error) {
+      console.error("JWT Error:", error);
+      localStorage.removeItem("access-token");
+    } finally {
       setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [axios]);
+    }
+  });
+  
+  return () => unsubscribe();
+}, [axios]);
 
   const creatUser = (email, password) => {
     setLoading(true);
     return createUserWithEmailAndPassword(auth, email, password);
   };
+  useEffect(() => {
+  console.log("Current User:", user);
+}, [user]);
 
   const signInUser = (email, password) => {
     setLoading(true);

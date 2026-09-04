@@ -14,7 +14,7 @@ export const setUserRole = async (uid, role) => {
       role: role,
       roleUpdatedAt: new Date(),
     });
-    console.log(`User role updated to: ${role}`);
+    (`User role updated to: ${role}`);
   } catch (error) {
     console.error('Error updating user role:', error);
     throw error;
